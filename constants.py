@@ -1,3 +1,3 @@
 dataset = 'SUSY'
 GROUP_SIZE = 2
-MODELS_NUM = 1
+MODELS_NUM = 10

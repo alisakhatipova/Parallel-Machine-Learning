@@ -1,9 +1,9 @@
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.neighbors import KNeighborsClassifier
 
 
 def alg_svm(train_subset, train_class):
-    model = SVC()
+    model = LinearSVC()
     model.fit(train_subset, train_class)
     return model
 
