@@ -2,26 +2,36 @@ import numpy as np
 import math
 import os
 import logging
+import shutil
 from sklearn.metrics import roc_auc_score
 from sklearn.externals import joblib
 from sklearn import datasets
+from constants import *
 
 
 class ThunderDome:
-    def __init__(self, inputfile, alg, group_size, models_num, log_folder, need_to_retrain=True, mode='DEBUG'):
-        # logging.basicConfig(filename='log.txt', level=logging.INFO,
-        #                     format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-        # logger = logging.getLogger(__name__)
+    def __init__(self, X, alg, group_size, models_num, log_file,
+                 need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
+
+        logging.basicConfig(filename=log_file, level=logging.INFO,
+                             format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        np.random.seed(0)
+        logger = logging.getLogger()
+        self.logger = logger
+        self.split_type = split_type
+        logger.info("\n\n")
+        logger.info("Experiment start " + alg.__name__ + " group size = " +
+                    str(group_size) + " models number = " + str(models_num))
         self.alg = alg
-        if mode == 'DEBUG':
+        if mode == MODE_DEBUG:
             all_set, classes = datasets.load_breast_cancer(return_X_y=True)
             all_set, classes = self.shuffle_data(all_set, classes)
         else:
-            X = np.loadtxt(inputfile, dtype='f4', delimiter=',')
             classes = X[:, 0].reshape((-1, 1))
             all_set = X[:, 1:]
-
-        self.log_folder = log_folder
+            all_set, classes = self.shuffle_data(all_set, classes)
+            # all_set = np.array_split(all_set, 1000)[0]
+            # classes = np.array_split(classes, 1000)[0]
         self.models_num = models_num
         self.group_size = group_size
         self.need_to_retrain = need_to_retrain
@@ -36,14 +46,38 @@ class ThunderDome:
         self.train_set, self.test_set = np.array_split(all_set, 2)
         self.train_classes, self.test_classes = np.array_split(classes, 2)
         self.models = []
+        self.best_auc = 0
+        if self.split_type == FULL_SPLIT:
+            part_num = self.calculate_nodes_num(models_num, group_size)
+            self.full_split_data, self.full_split_classes = \
+                self.split_data_by_n(self.test_set, self.test_classes, part_num)
 
     def split_data(self, data_set, classes, g):
         n = math.ceil(len(self.models)*1.0 / g)
         return np.array_split(data_set, n), np.array_split(classes, n)
 
+    def split_data_by_n(self, data_set, classes, n):
+        return np.array_split(data_set, n), np.array_split(classes, n)
+
+    def next_part_of_full_split(self, g):
+        n = int(math.ceil(len(self.models)*1.0 / g))
+        current_data = self.full_split_data[:n]
+        current_classes = self.full_split_classes[:n]
+        self.full_split_data = self.full_split_data[n:]
+        self.full_split_classes = self.full_split_classes[n:]
+        return current_data, current_classes
+
+    @staticmethod
+    def calculate_nodes_num(num, g):
+        sum = 0
+        n = num
+        while n > 1:
+            n = int(math.ceil(n * 1.0 / g))
+            sum += n
+        return sum
+
     @staticmethod
     def shuffle_data(data, classes):
-        np.random.seed(0)
         idx = np.random.permutation(len(data))
         return data[idx], classes[idx]
 
@@ -56,25 +90,35 @@ class ThunderDome:
     def run_experiment(self):
         winner = self.run()
         self.validate(winner)
-        self.compute_real_result()
+        self.logger.info('End of validation')
+        # self.compute_real_result()
 
     def run(self):
         if self.need_to_retrain:
+            shutil.rmtree(MODELS_DIR)
+            os.mkdir(MODELS_DIR)
             self.train()
             for i, model in enumerate(self.models):
-                joblib.dump(model, os.path.join('models', 'model' + str(i) + '.pkl'))
+                joblib.dump(model, os.path.join(MODELS_DIR, 'model' + str(i) + '.pkl'))
         else:
             self.models = []
-            for filename in os.listdir('models'):
-                self.models.append(joblib.load(os.path.join('models', filename)))
+            models_list = sorted(os.listdir(MODELS_DIR))
+            for filename in models_list:
+                self.models.append(joblib.load(os.path.join(MODELS_DIR, filename)))
         round_num = 0
+        self.logger.info('Start rounds')
         while True:
             round_num += 1
-            print "Round number", round_num, '\n'
-            print "Number of models in this round", len(self.models), '\n'
+            self.logger.info("Round number " + str(round_num))
+            self.logger.info("Number of models in this round " + str(len(self.models)))
+            # print "Round number", round_num
+            # print "Number of models in this round", len(self.models)
             groups = self.split_models(self.models, self.group_size)
-            self.test_set, self.test_classes = self.shuffle_data(self.test_set, self.test_classes)
-            test_sets, test_classes_sets = self.split_data(self.test_set, self.test_classes, self.group_size)
+            if self.split_type == SIMPLE_SPLIT:
+                self.test_set, self.test_classes = self.shuffle_data(self.test_set, self.test_classes)
+                test_sets, test_classes_sets = self.split_data(self.test_set, self.test_classes, self.group_size)
+            else:
+                test_sets, test_classes_sets = self.next_part_of_full_split(self.group_size)
             winners = []
             for group, test_set, test_classes_set in zip(groups, test_sets, test_classes_sets):
                 best_model = self.competition(group, test_set, test_classes_set)
@@ -82,28 +126,35 @@ class ThunderDome:
             self.models = winners
             if len(self.models) == 1:
                 return self.models[0]
+        self.logger.info('End rounds')
 
     def train(self):
         train_subsets = np.array_split(self.train_set, self.models_num)
         train_classes = np.array_split(self.train_classes, self.models_num)
+        self.logger.info('Start decentralized training')
         for train_subset, train_class in zip(train_subsets, train_classes):
             model = self.alg(train_subset, train_class)
             self.models.append(model)
+        self.logger.info('End decentralized training')
 
     def validate(self, model):
         predicted_classes = model.predict(self.validation_set)
         auc = roc_auc_score(self.validation_classes, predicted_classes)
-        print 'Result for validation set is', auc
+        self.logger.info('Result for validation set is ' + str(auc))
+        # print 'Result for validation set is', auc
         return auc
 
     def compute_real_result(self):
+        self.logger.info('Start centralized training')
         model = self.alg(self.train_set, self.train_classes)
-        predicted_classes = model.predict(self.test_set)
-        auc = roc_auc_score(self.test_classes, predicted_classes)
-        print 'For not distributed case result is ', auc
+        self.logger.info('End centralized training')
+        self.logger.info('Start centralized prediction')
+        predicted_classes = model.predict(self.validation_set)
+        auc = roc_auc_score(self.validation_classes, predicted_classes)
+        self.logger.info('For centralized case result is ' + str(auc))
+        # print 'For not distributed case result is ', auc
 
-    @staticmethod
-    def competition(models, test_set, test_classes):
+    def competition(self, models, test_set, test_classes):
         best_model = None
         best_auc = 0.0
         for model in models:
@@ -112,5 +163,7 @@ class ThunderDome:
             if auc > best_auc:
                 best_auc = auc
                 best_model = model
-        print "best auc", best_auc, '\n'
+        self.logger.warning('best auc ' + str(best_auc))
+        self.best_auc = best_auc
+        # print "best auc", best_auc
         return best_model

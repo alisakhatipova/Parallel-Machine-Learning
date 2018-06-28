@@ -1,41 +1,54 @@
+from os import path
 from thunderdome import *
 from constants import *
 from algorithms import *
-import sys
-import os
-import itertools
-from os import path
 
-groups_sizes = [2, 5, 10, 20, 100]
-models_number = [10, 100, 500, 1000]
+
+group_sizes = [10, 100, 1000, 10000]
+models_numbers = [100, 1000, 10000, 100000]
+inputfiles = ['datasets/SUSY.csv', 'datasets/HIGGS.csv']
+# for DEBUG
+# group_sizes = [3, 4, 30]
+# models_numbers = [10, 20]
+# inputfiles = ['datasets/SUSY.csv']
+algorithms = [alg_svm, alg_lr, alg_nn]
+
+log_folder = 'base_experiment'
+
 if __name__ == "__main__":
-
-    # f = open(path.join("error.log"), "w")
-    # original_stderr = sys.stderr
-    # sys.stderr = f
-
-    if dataset == 'HIGGS':
-        input_file = 'datasets/HIGGS.csv'
-    elif dataset == 'SUSY':
-        input_file = 'datasets/SUSY.csv'
-    log_folder = 'base_experiment'
-
     directory = log_folder
+
     try:
         os.stat(directory)
     except:
         os.mkdir(directory)
 
-    experiment = ThunderDome(input_file, alg_svm, 2, 20, log_folder)
-    experiment.run_experiment()
-    experiment = ThunderDome(input_file, alg_svm, 4, 20, log_folder, False)
-    experiment.run_experiment()
+    log_file = path.join(log_folder, 'full.txt')
+    for inputfile in inputfiles:
+        X = np.loadtxt(inputfile, dtype='f4', delimiter=',')
+        for model_num in models_numbers:
+            for group_size in group_sizes:
+                if group_size >= models_numbers:
+                    continue
+                for alg in algorithms:
+                    # train models (only need to do it once for all experiments
+                    # compute result and time for decentralized case
+                    experiment = ThunderDome(X, alg, group_size, model_num, log_file,
+                                             split_type=SIMPLE_SPLIT, mode=MODE_REAL)
+                    experiment.run_experiment()
+                    experiment.compute_real_result()
 
-    experiment = ThunderDome(input_file, alg_knn, 2, 20, log_folder)
-    experiment.run_experiment()
-    experiment = ThunderDome(input_file, alg_knn, 4, 20, log_folder, False)
-    experiment.run_experiment()
+                    # baseline SIMPLE SPLIT
+                    experiment = ThunderDome(X, alg, model_num, model_num, log_file,
+                                             split_type=SIMPLE_SPLIT, need_to_retrain=False, mode=MODE_REAL)
+                    experiment.run_experiment()
 
-    # [zip(x, groups_sizes) for x in itertools.permutations(models_number, len(groups_sizes))]
+                    # the same experiment for FULL_SPLIT
+                    experiment = ThunderDome(X, alg, group_size, model_num, log_file,
+                                             split_type=FULL_SPLIT, need_to_retrain=False, mode=MODE_REAL)
+                    experiment.run_experiment()
 
-
+                    # baseline FULL SPLIT
+                    experiment = ThunderDome(X, alg, model_num, model_num, log_file,
+                                             split_type=FULL_SPLIT, need_to_retrain=False, mode=MODE_REAL)
+                    experiment.run_experiment()
