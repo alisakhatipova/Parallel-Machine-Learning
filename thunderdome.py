@@ -3,12 +3,13 @@ import math
 import os
 import logging
 import shutil
+import time
 from sklearn.metrics import roc_auc_score
 from sklearn.externals import joblib
 from sklearn import datasets
 from constants import *
 
-
+SPL_STR = ["SIMPLE", "FULL", "NO"]
 class ThunderDome:
     def __init__(self, X, alg, group_size, models_num, log_file,
                  need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
@@ -21,17 +22,20 @@ class ThunderDome:
         self.split_type = split_type
         logger.info("\n\n")
         logger.info("Experiment start " + alg.__name__ + " group size = " +
-                    str(group_size) + " models number = " + str(models_num))
+                    str(group_size) + " models number = " + str(models_num) +
+                    " split type is " + SPL_STR[split_type] + " SPLIT")
         self.alg = alg
         if mode == MODE_DEBUG:
             all_set, classes = datasets.load_breast_cancer(return_X_y=True)
             all_set, classes = self.shuffle_data(all_set, classes)
         else:
-            classes = X[:, 0].reshape((-1, 1))
-            all_set = X[:, 1:]
-            all_set, classes = self.shuffle_data(all_set, classes)
+            # classes = X[:, 0].reshape((-1, 1))
+            # all_set = X[:, 1:]
+            # all_set, classes = self.shuffle_data(all_set, classes)
             # all_set = np.array_split(all_set, 1000)[0]
             # classes = np.array_split(classes, 1000)[0]
+            classes = np.loadtxt('datasets/classes.csv', delimiter=',')
+            all_set = np.loadtxt('datasets/data.csv', delimiter=',')
         self.models_num = models_num
         self.group_size = group_size
         self.need_to_retrain = need_to_retrain
@@ -107,6 +111,7 @@ class ThunderDome:
                 self.models.append(joblib.load(os.path.join(MODELS_DIR, filename)))
         round_num = 0
         self.logger.info('Start rounds')
+        start = time.time()
         while True:
             round_num += 1
             self.logger.info("Round number " + str(round_num))
@@ -125,17 +130,19 @@ class ThunderDome:
                 winners.append(best_model)
             self.models = winners
             if len(self.models) == 1:
+                self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
                 return self.models[0]
-        self.logger.info('End rounds')
 
     def train(self):
         train_subsets = np.array_split(self.train_set, self.models_num)
         train_classes = np.array_split(self.train_classes, self.models_num)
+        start = time.time()
         self.logger.info('Start decentralized training')
         for train_subset, train_class in zip(train_subsets, train_classes):
             model = self.alg(train_subset, train_class)
             self.models.append(model)
-        self.logger.info('End decentralized training')
+        self.logger.info('End decentralized training ' + str(time.time() - start)
+                         + ' seconds, time per model ' + str((time.time() - start)/self.models_num) + ' seconds')
 
     def validate(self, model):
         predicted_classes = model.predict(self.validation_set)
@@ -145,9 +152,10 @@ class ThunderDome:
         return auc
 
     def compute_real_result(self):
+        start = time.time()
         self.logger.info('Start centralized training')
         model = self.alg(self.train_set, self.train_classes)
-        self.logger.info('End centralized training')
+        self.logger.info('End centralized training ' + str(time.time() - start) + ' seconds')
         self.logger.info('Start centralized prediction')
         predicted_classes = model.predict(self.validation_set)
         auc = roc_auc_score(self.validation_classes, predicted_classes)
