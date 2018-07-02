@@ -1,0 +1,279 @@
+07/02/2018 01:10:44 AM 
+
+
+07/02/2018 01:10:44 AM Experiment start alg_svm group size = 5 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 01:10:44 AM Start decentralized training
+07/02/2018 01:13:23 AM End decentralized training 158.813627958 seconds, time per model 0.158813634872 seconds
+07/02/2018 01:13:24 AM Start rounds
+07/02/2018 01:13:24 AM Round number 1
+07/02/2018 01:13:24 AM Number of models in this round 1000
+07/02/2018 01:13:29 AM Round number 2
+07/02/2018 01:13:29 AM Number of models in this round 200
+07/02/2018 01:13:32 AM Round number 3
+07/02/2018 01:13:32 AM Number of models in this round 40
+07/02/2018 01:13:36 AM Round number 4
+07/02/2018 01:13:36 AM Number of models in this round 8
+07/02/2018 01:13:39 AM Round number 5
+07/02/2018 01:13:39 AM Number of models in this round 2
+07/02/2018 01:13:42 AM End rounds in 17.7487940788 seconds
+07/02/2018 01:13:42 AM Result for validation set is 0.7811764857313045
+07/02/2018 01:13:42 AM End of validation
+07/02/2018 01:13:42 AM 
+
+Start centralized training
+07/02/2018 01:32:00 AM End centralized training 1097.85066605 seconds
+07/02/2018 01:32:00 AM Start centralized prediction
+07/02/2018 01:32:00 AM For centralized case result is 0.7762130749591453
+
+07/02/2018 01:32:00 AM 
+
+
+07/02/2018 01:32:00 AM Experiment start alg_svm group size = 1000 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 01:32:02 AM Start rounds
+07/02/2018 01:32:02 AM Round number 1
+07/02/2018 01:32:02 AM Number of models in this round 1000
+07/02/2018 01:43:18 AM End rounds in 675.982379913 seconds
+07/02/2018 01:43:18 AM Result for validation set is 0.7811764857313045
+07/02/2018 01:43:18 AM End of validation
+07/02/2018 01:43:18 AM 
+
+
+07/02/2018 01:43:18 AM Experiment start alg_svm group size = 5 models number = 1000 split type is FULL SPLIT
+07/02/2018 01:43:18 AM Start rounds
+07/02/2018 01:43:18 AM Round number 1
+07/02/2018 01:43:18 AM Number of models in this round 1000
+07/02/2018 01:43:21 AM Round number 2
+07/02/2018 01:43:21 AM Number of models in this round 200
+07/02/2018 01:43:21 AM Round number 3
+07/02/2018 01:43:21 AM Number of models in this round 40
+07/02/2018 01:43:21 AM Round number 4
+07/02/2018 01:43:21 AM Number of models in this round 8
+07/02/2018 01:43:21 AM Round number 5
+07/02/2018 01:43:21 AM Number of models in this round 2
+07/02/2018 01:43:21 AM End rounds in 2.65323805809 seconds
+07/02/2018 01:43:21 AM Result for validation set is 0.7805028877163187
+07/02/2018 01:43:21 AM End of validation
+07/02/2018 01:43:21 AM 
+
+
+07/02/2018 01:43:21 AM Experiment start alg_svm group size = 1000 models number = 1000 split type is FULL SPLIT
+07/02/2018 01:43:22 AM Start rounds
+07/02/2018 01:43:22 AM Round number 1
+07/02/2018 01:43:22 AM Number of models in this round 1000
+07/02/2018 01:54:32 AM End rounds in 669.952560186 seconds
+07/02/2018 01:54:32 AM Result for validation set is 0.7811764857313045
+07/02/2018 01:54:32 AM End of validation
+07/02/2018 01:54:32 AM 
+
+
+07/02/2018 01:54:32 AM Experiment start alg_svm group size = 5 models number = 1000 split type is NO SPLIT
+07/02/2018 01:54:32 AM Start rounds
+07/02/2018 01:54:32 AM Round number 1
+07/02/2018 01:54:32 AM Number of models in this round 1000
+07/02/2018 02:05:44 AM Round number 2
+07/02/2018 02:05:44 AM Number of models in this round 200
+07/02/2018 02:07:58 AM Round number 3
+07/02/2018 02:07:58 AM Number of models in this round 40
+07/02/2018 02:08:25 AM Round number 4
+07/02/2018 02:08:25 AM Number of models in this round 8
+07/02/2018 02:08:30 AM Round number 5
+07/02/2018 02:08:30 AM Number of models in this round 2
+07/02/2018 02:08:32 AM End rounds in 839.250723124 seconds
+07/02/2018 02:08:32 AM Result for validation set is 0.7811764857313045
+07/02/2018 02:08:32 AM End of validation
+07/02/2018 02:08:32 AM 
+
+
+07/02/2018 02:08:32 AM Experiment start alg_svm group size = 1000 models number = 1000 split type is NO SPLIT
+07/02/2018 02:08:32 AM Start rounds
+07/02/2018 02:08:32 AM Round number 1
+07/02/2018 02:08:32 AM Number of models in this round 1000
+07/02/2018 02:19:43 AM End rounds in 670.627835035 seconds
+07/02/2018 02:19:43 AM Result for validation set is 0.7811764857313045
+07/02/2018 02:19:43 AM End of validation
+07/02/2018 02:19:43 AM 
+
+
+07/02/2018 02:19:43 AM Experiment start alg_lr group size = 5 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 02:19:44 AM Start decentralized training
+07/02/2018 02:19:54 AM End decentralized training 10.3477070332 seconds, time per model 0.0103477120399 seconds
+07/02/2018 02:19:55 AM Start rounds
+07/02/2018 02:19:55 AM Round number 1
+07/02/2018 02:19:55 AM Number of models in this round 1000
+07/02/2018 02:20:00 AM Round number 2
+07/02/2018 02:20:00 AM Number of models in this round 200
+07/02/2018 02:20:03 AM Round number 3
+07/02/2018 02:20:03 AM Number of models in this round 40
+07/02/2018 02:20:07 AM Round number 4
+07/02/2018 02:20:07 AM Number of models in this round 8
+07/02/2018 02:20:11 AM Round number 5
+07/02/2018 02:20:11 AM Number of models in this round 2
+07/02/2018 02:20:13 AM End rounds in 18.069617033 seconds
+07/02/2018 02:20:14 AM Result for validation set is 0.7819078365983766
+07/02/2018 02:20:14 AM End of validation
+07/02/2018 02:20:14 AM 
+
+Start centralized training
+07/02/2018 02:20:44 AM End centralized training 30.8663110733 seconds
+07/02/2018 02:20:44 AM Start centralized prediction
+07/02/2018 02:20:45 AM For centralized case result is 0.7792972163021316
+
+07/02/2018 02:20:45 AM 
+
+
+07/02/2018 02:20:45 AM Experiment start alg_lr group size = 1000 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 02:20:45 AM Start rounds
+07/02/2018 02:20:45 AM Round number 1
+07/02/2018 02:20:45 AM Number of models in this round 1000
+07/02/2018 02:32:12 AM End rounds in 686.20897603 seconds
+07/02/2018 02:32:12 AM Result for validation set is 0.7820439949492224
+07/02/2018 02:32:12 AM End of validation
+07/02/2018 02:32:12 AM 
+
+
+07/02/2018 02:32:12 AM Experiment start alg_lr group size = 5 models number = 1000 split type is FULL SPLIT
+07/02/2018 02:32:12 AM Start rounds
+07/02/2018 02:32:12 AM Round number 1
+07/02/2018 02:32:12 AM Number of models in this round 1000
+07/02/2018 02:32:14 AM Round number 2
+07/02/2018 02:32:14 AM Number of models in this round 200
+07/02/2018 02:32:15 AM Round number 3
+07/02/2018 02:32:15 AM Number of models in this round 40
+07/02/2018 02:32:15 AM Round number 4
+07/02/2018 02:32:15 AM Number of models in this round 8
+07/02/2018 02:32:15 AM Round number 5
+07/02/2018 02:32:15 AM Number of models in this round 2
+07/02/2018 02:32:15 AM End rounds in 2.38226222992 seconds
+07/02/2018 02:32:15 AM Result for validation set is 0.7820526493387796
+07/02/2018 02:32:15 AM End of validation
+07/02/2018 02:32:15 AM 
+
+
+07/02/2018 02:32:15 AM Experiment start alg_lr group size = 1000 models number = 1000 split type is FULL SPLIT
+07/02/2018 02:32:15 AM Start rounds
+07/02/2018 02:32:15 AM Round number 1
+07/02/2018 02:32:15 AM Number of models in this round 1000
+07/02/2018 02:43:27 AM End rounds in 672.018970013 seconds
+07/02/2018 02:43:28 AM Result for validation set is 0.7820439949492224
+07/02/2018 02:43:28 AM End of validation
+07/02/2018 02:43:28 AM 
+
+
+07/02/2018 02:43:28 AM Experiment start alg_lr group size = 5 models number = 1000 split type is NO SPLIT
+07/02/2018 02:43:28 AM Start rounds
+07/02/2018 02:43:28 AM Round number 1
+07/02/2018 02:43:28 AM Number of models in this round 1000
+07/02/2018 02:54:38 AM Round number 2
+07/02/2018 02:54:38 AM Number of models in this round 200
+07/02/2018 02:56:52 AM Round number 3
+07/02/2018 02:56:52 AM Number of models in this round 40
+07/02/2018 02:57:19 AM Round number 4
+07/02/2018 02:57:19 AM Number of models in this round 8
+07/02/2018 02:57:24 AM Round number 5
+07/02/2018 02:57:24 AM Number of models in this round 2
+07/02/2018 02:57:26 AM End rounds in 837.307997942 seconds
+07/02/2018 02:57:26 AM Result for validation set is 0.7820439949492224
+07/02/2018 02:57:26 AM End of validation
+07/02/2018 02:57:26 AM 
+
+
+07/02/2018 02:57:26 AM Experiment start alg_lr group size = 1000 models number = 1000 split type is NO SPLIT
+07/02/2018 02:57:26 AM Start rounds
+07/02/2018 02:57:26 AM Round number 1
+07/02/2018 02:57:26 AM Number of models in this round 1000
+07/02/2018 03:08:38 AM End rounds in 671.991739988 seconds
+07/02/2018 03:08:38 AM Result for validation set is 0.7820439949492224
+07/02/2018 03:08:38 AM End of validation
+07/02/2018 03:08:38 AM 
+
+
+07/02/2018 03:08:38 AM Experiment start alg_nn group size = 5 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 03:08:39 AM Start decentralized training
+07/02/2018 03:11:55 AM End decentralized training 195.767649889 seconds, time per model 0.195767654896 seconds
+07/02/2018 03:11:57 AM Start rounds
+07/02/2018 03:11:57 AM Round number 1
+07/02/2018 03:11:57 AM Number of models in this round 1000
+07/02/2018 03:12:04 AM Round number 2
+07/02/2018 03:12:04 AM Number of models in this round 200
+07/02/2018 03:12:09 AM Round number 3
+07/02/2018 03:12:09 AM Number of models in this round 40
+07/02/2018 03:12:15 AM Round number 4
+07/02/2018 03:12:15 AM Number of models in this round 8
+07/02/2018 03:12:21 AM Round number 5
+07/02/2018 03:12:21 AM Number of models in this round 2
+07/02/2018 03:12:25 AM End rounds in 27.8930811882 seconds
+07/02/2018 03:12:25 AM Result for validation set is 0.7873764647232113
+07/02/2018 03:12:25 AM End of validation
+07/02/2018 03:12:25 AM 
+
+Start centralized training
+07/02/2018 03:16:26 AM End centralized training 240.317167044 seconds
+07/02/2018 03:16:26 AM Start centralized prediction
+07/02/2018 03:16:26 AM For centralized case result is 0.7895174544271933
+
+07/02/2018 03:16:26 AM 
+
+
+07/02/2018 03:16:26 AM Experiment start alg_nn group size = 1000 models number = 1000 split type is SIMPLE SPLIT
+07/02/2018 03:16:28 AM Start rounds
+07/02/2018 03:16:28 AM Round number 1
+07/02/2018 03:16:28 AM Number of models in this round 1000
+07/02/2018 03:32:40 AM End rounds in 972.192503214 seconds
+07/02/2018 03:32:40 AM Result for validation set is 0.7873764647232113
+07/02/2018 03:32:40 AM End of validation
+07/02/2018 03:32:40 AM 
+
+
+07/02/2018 03:32:40 AM Experiment start alg_nn group size = 5 models number = 1000 split type is FULL SPLIT
+07/02/2018 03:32:42 AM Start rounds
+07/02/2018 03:32:42 AM Round number 1
+07/02/2018 03:32:42 AM Number of models in this round 1000
+07/02/2018 03:32:46 AM Round number 2
+07/02/2018 03:32:46 AM Number of models in this round 200
+07/02/2018 03:32:47 AM Round number 3
+07/02/2018 03:32:47 AM Number of models in this round 40
+07/02/2018 03:32:47 AM Round number 4
+07/02/2018 03:32:47 AM Number of models in this round 8
+07/02/2018 03:32:47 AM Round number 5
+07/02/2018 03:32:47 AM Number of models in this round 2
+07/02/2018 03:32:47 AM End rounds in 4.94163107872 seconds
+07/02/2018 03:32:47 AM Result for validation set is 0.7873764647232113
+07/02/2018 03:32:47 AM End of validation
+07/02/2018 03:32:47 AM 
+
+
+07/02/2018 03:32:47 AM Experiment start alg_nn group size = 1000 models number = 1000 split type is FULL SPLIT
+07/02/2018 03:32:48 AM Start rounds
+07/02/2018 03:32:48 AM Round number 1
+07/02/2018 03:32:48 AM Number of models in this round 1000
+07/02/2018 03:48:55 AM End rounds in 966.538988113 seconds
+07/02/2018 03:48:55 AM Result for validation set is 0.7873764647232113
+07/02/2018 03:48:55 AM End of validation
+07/02/2018 03:48:55 AM 
+
+
+07/02/2018 03:48:55 AM Experiment start alg_nn group size = 5 models number = 1000 split type is NO SPLIT
+07/02/2018 03:48:56 AM Start rounds
+07/02/2018 03:48:56 AM Round number 1
+07/02/2018 03:48:56 AM Number of models in this round 1000
+07/02/2018 04:04:57 AM Round number 2
+07/02/2018 04:04:57 AM Number of models in this round 200
+07/02/2018 04:08:09 AM Round number 3
+07/02/2018 04:08:09 AM Number of models in this round 40
+07/02/2018 04:08:48 AM Round number 4
+07/02/2018 04:08:48 AM Number of models in this round 8
+07/02/2018 04:08:55 AM Round number 5
+07/02/2018 04:08:55 AM Number of models in this round 2
+07/02/2018 04:08:57 AM End rounds in 1200.84061098 seconds
+07/02/2018 04:08:57 AM Result for validation set is 0.7873764647232113
+07/02/2018 04:08:57 AM End of validation
+07/02/2018 04:08:57 AM 
+
+
+07/02/2018 04:08:57 AM Experiment start alg_nn group size = 1000 models number = 1000 split type is NO SPLIT
+07/02/2018 04:08:59 AM Start rounds
+07/02/2018 04:08:59 AM Round number 1
+07/02/2018 04:08:59 AM Number of models in this round 1000
+07/02/2018 04:25:07 AM End rounds in 967.917728901 seconds
+07/02/2018 04:25:07 AM Result for validation set is 0.7873764647232113
+07/02/2018 04:25:07 AM End of validation

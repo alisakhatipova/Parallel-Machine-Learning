@@ -23,6 +23,8 @@ def alg_lr(train_subset, train_class):
 
 
 def alg_nn(train_subset, train_class):
+    # model = MLPClassifier(solver='lbfgs', alpha=1e-5,
+    #                       hidden_layer_sizes=(5, 2), random_state=1)
     model = MLPClassifier(solver='lbfgs', alpha=1e-5,
                           hidden_layer_sizes=(5, 2), random_state=1)
     model.fit(train_subset, train_class.ravel())

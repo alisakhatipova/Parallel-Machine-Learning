@@ -9,7 +9,7 @@ from sklearn.externals import joblib
 from sklearn import datasets
 from constants import *
 
-SPL_STR = ["SIMPLE", "FULL", "NO"]
+
 class ThunderDome:
     def __init__(self, X, alg, group_size, models_num, log_file,
                  need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
@@ -34,8 +34,10 @@ class ThunderDome:
             # all_set, classes = self.shuffle_data(all_set, classes)
             # all_set = np.array_split(all_set, 1000)[0]
             # classes = np.array_split(classes, 1000)[0]
-            classes = np.loadtxt('datasets/classes.csv', delimiter=',')
-            all_set = np.loadtxt('datasets/data.csv', delimiter=',')
+            # classes = np.loadtxt('datasets/classes.csv', delimiter=',')
+            # all_set = np.loadtxt('datasets/data.csv', delimiter=',')
+            all_set = X[0]
+            classes = X[1]
         self.models_num = models_num
         self.group_size = group_size
         self.need_to_retrain = need_to_retrain
@@ -103,10 +105,10 @@ class ThunderDome:
             os.mkdir(MODELS_DIR)
             self.train()
             for i, model in enumerate(self.models):
-                joblib.dump(model, os.path.join(MODELS_DIR, 'model' + str(i) + '.pkl'))
+                joblib.dump(model, os.path.join(MODELS_DIR, str(i) + '.pkl'))
         else:
             self.models = []
-            models_list = sorted(os.listdir(MODELS_DIR))
+            models_list = sorted(os.listdir(MODELS_DIR), key=lambda st: int(st.split('.')[0]))
             for filename in models_list:
                 self.models.append(joblib.load(os.path.join(MODELS_DIR, filename)))
         round_num = 0
@@ -116,18 +118,21 @@ class ThunderDome:
             round_num += 1
             self.logger.info("Round number " + str(round_num))
             self.logger.info("Number of models in this round " + str(len(self.models)))
-            # print "Round number", round_num
-            # print "Number of models in this round", len(self.models)
             groups = self.split_models(self.models, self.group_size)
             if self.split_type == SIMPLE_SPLIT:
                 self.test_set, self.test_classes = self.shuffle_data(self.test_set, self.test_classes)
                 test_sets, test_classes_sets = self.split_data(self.test_set, self.test_classes, self.group_size)
-            else:
+            elif self.split_type == FULL_SPLIT:
                 test_sets, test_classes_sets = self.next_part_of_full_split(self.group_size)
             winners = []
-            for group, test_set, test_classes_set in zip(groups, test_sets, test_classes_sets):
-                best_model = self.competition(group, test_set, test_classes_set)
-                winners.append(best_model)
+            if self.split_type == NO_SPLIT:
+                for group in groups:
+                    best_model = self.competition(group, self.test_set, self.test_classes)
+                    winners.append(best_model)
+            else:
+                for group, test_set, test_classes_set in zip(groups, test_sets, test_classes_sets):
+                    best_model = self.competition(group, test_set, test_classes_set)
+                    winners.append(best_model)
             self.models = winners
             if len(self.models) == 1:
                 self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
@@ -153,13 +158,13 @@ class ThunderDome:
 
     def compute_real_result(self):
         start = time.time()
-        self.logger.info('Start centralized training')
+        self.logger.info('\n\nStart centralized training')
         model = self.alg(self.train_set, self.train_classes)
         self.logger.info('End centralized training ' + str(time.time() - start) + ' seconds')
         self.logger.info('Start centralized prediction')
         predicted_classes = model.predict(self.validation_set)
         auc = roc_auc_score(self.validation_classes, predicted_classes)
-        self.logger.info('For centralized case result is ' + str(auc))
+        self.logger.info('For centralized case result is ' + str(auc) + '\n')
         # print 'For not distributed case result is ', auc
 
     def competition(self, models, test_set, test_classes):
@@ -171,7 +176,7 @@ class ThunderDome:
             if auc > best_auc:
                 best_auc = auc
                 best_model = model
-        self.logger.warning('best auc ' + str(best_auc))
+        # self.logger.warning('best auc ' + str(best_auc))
         self.best_auc = best_auc
         # print "best auc", best_auc
         return best_model
