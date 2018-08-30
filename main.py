@@ -3,6 +3,7 @@ from thunderdome import *
 from constants import *
 from algorithms import *
 
+import logging
 
 # group_sizes = [1, 100]
 # models_numbers = [100, 1000]
@@ -13,17 +14,27 @@ models_numbers = [1000]
 inputfiles = ['datasets/SUSY.csv']
 algorithms = [alg_svm, alg_lr, alg_nn]
 log_folder = 'base_experiment'
+models_folder = 'models'
+iter_num = 10
 
 if __name__ == "__main__":
-    directory = log_folder
+    try:
+        os.stat(log_folder)
+    except:
+        os.mkdir(log_folder)
 
     try:
-        os.stat(directory)
+        os.stat(models_folder)
     except:
-        os.mkdir(directory)
+        os.mkdir(models_folder)
 
-    log_file = path.join(log_folder, 'full.txt')
-    for inputfile in inputfiles:
+    log_file = path.join(log_folder, 'log.txt')
+    logging.basicConfig(filename=log_file, level=logging.INFO,
+                        format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+    logger = logging.getLogger()
+    for i in range(iter_num):
+        logger.info("ITERATION NUMBER " + str(i) + ' ***************************************************************')
         X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
         np.random.seed(34445)
         classes = X[:, 0].reshape((-1, 1))
@@ -39,33 +50,33 @@ if __name__ == "__main__":
                 for alg in algorithms:
                     # train models (only need to do it once for all experiments
                     # compute result and time for decentralized case
-                    experiment = ThunderDome(X, alg, group_size, model_num, log_file,
+                    experiment = ThunderDome(X, alg, group_size, model_num, logger,
                                              split_type=SIMPLE_SPLIT, mode=MODE_REAL)
                     experiment.run_experiment()
                     experiment.compute_real_result()
 
                     # baseline SIMPLE SPLIT
-                    experiment = ThunderDome(X, alg, model_num, model_num, log_file,
+                    experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                              split_type=SIMPLE_SPLIT, need_to_retrain=False, mode=MODE_REAL)
                     experiment.run_experiment()
 
                     # the same experiment for FULL_SPLIT
-                    experiment = ThunderDome(X, alg, group_size, model_num, log_file,
+                    experiment = ThunderDome(X, alg, group_size, model_num, logger,
                                              split_type=FULL_SPLIT, need_to_retrain=False, mode=MODE_REAL)
                     experiment.run_experiment()
 
                     # baseline FULL SPLIT
-                    experiment = ThunderDome(X, alg, model_num, model_num, log_file,
+                    experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                              split_type=FULL_SPLIT, need_to_retrain=False, mode=MODE_REAL)
                     experiment.run_experiment()
 
                     # the same experiment for FULL_SPLIT
-                    experiment = ThunderDome(X, alg, group_size, model_num, log_file,
+                    experiment = ThunderDome(X, alg, group_size, model_num, logger,
                                              split_type=NO_SPLIT, need_to_retrain=False, mode=MODE_REAL)
                     experiment.run_experiment()
 
                     # baseline FULL SPLIT
-                    experiment = ThunderDome(X, alg, model_num, model_num, log_file,
+                    experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                              split_type=NO_SPLIT, need_to_retrain=False, mode=MODE_REAL)
                     experiment.run_experiment()
     # X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')

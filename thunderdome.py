@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import os
-import logging
 import shutil
 import time
 from sklearn.metrics import roc_auc_score
@@ -11,15 +10,11 @@ from constants import *
 
 
 class ThunderDome:
-    def __init__(self, X, alg, group_size, models_num, log_file,
+    def __init__(self, X, alg, group_size, models_num, logger,
                  need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
-
-        logging.basicConfig(filename=log_file, level=logging.INFO,
-                             format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-        np.random.seed(0)
-        logger = logging.getLogger()
         self.logger = logger
         self.split_type = split_type
+        np.random.seed(0)
         logger.info("\n\n")
         logger.info("Experiment start " + alg.__name__ + " group size = " +
                     str(group_size) + " models number = " + str(models_num) +
@@ -116,8 +111,8 @@ class ThunderDome:
         start = time.time()
         while True:
             round_num += 1
-            self.logger.info("Round number " + str(round_num))
-            self.logger.info("Number of models in this round " + str(len(self.models)))
+            # self.logger.info("Round number " + str(round_num))
+            # self.logger.info("Number of models in this round " + str(len(self.models)))
             groups = self.split_models(self.models, self.group_size)
             if self.split_type == SIMPLE_SPLIT:
                 self.test_set, self.test_classes = self.shuffle_data(self.test_set, self.test_classes)
