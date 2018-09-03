@@ -31,12 +31,12 @@ if __name__ == "__main__":
     log_file = path.join(log_folder, 'log.txt')
     logging.basicConfig(filename=log_file, level=logging.INFO,
                         format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-
+    np.random.seed(0)
     logger = logging.getLogger()
     for i in range(iter_num):
         logger.info("ITERATION NUMBER " + str(i) + ' ***************************************************************')
         X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
-        np.random.seed(34445)
+
         classes = X[:, 0].reshape((-1, 1))
         all_set = X[:, 1:]
         idx = np.random.permutation(len(all_set))

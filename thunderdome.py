@@ -14,7 +14,6 @@ class ThunderDome:
                  need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
         self.logger = logger
         self.split_type = split_type
-        np.random.seed(0)
         logger.info("\n\n")
         logger.info("Experiment start " + alg.__name__ + " group size = " +
                     str(group_size) + " models number = " + str(models_num) +
