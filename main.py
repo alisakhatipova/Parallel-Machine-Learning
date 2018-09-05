@@ -12,7 +12,7 @@ alg_names = [alg_svm.__name__,  alg_lr.__name__, alg_nn.__name__]
 
 def split_comparison_experiment(X):
     group_size = 2
-    model_num = 10
+    model_num = 40
     res_full = {alg: [] for alg in alg_names}
     res_full_baseline = {alg: [] for alg in alg_names}
     res_simple = {alg: [] for alg in alg_names}
@@ -187,6 +187,21 @@ def learners_num_comparison_experiment(X):
                         out.write(res)
 
 
+def stratified_split(positive, negative, n):
+    pos = np.array_split(positive, n)
+    neg = np.array_split(negative, n)
+    all_data = []
+    classes = []
+    for i in range(n):
+        cur_data = np.concatenate((pos[i], neg[i]))
+        all_data.append(cur_data)
+        pos_len = len(pos[i])
+        neg_len = len(neg[i])
+        cur_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
+        classes.append(cur_classes)
+    return all_data, classes
+
+
 if __name__ == "__main__":
     try:
         os.stat(LOG_FOLDER)
@@ -211,11 +226,12 @@ if __name__ == "__main__":
     # classes = classes[idx]
     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
     positive_samples = all_set[np.where(classes == 1)[0]]
-    negative_samples = all_set[np.where(classes == 1)[0]]
+    negative_samples = all_set[np.where(classes == 0)[0]]
     # all_set, classes = self.shuffle_data(all_set, classes)
+    # data, classes = stratified_split(positive_samples, negative_samples, 2)
     X = [positive_samples, negative_samples]
 
-    # learners_num_comparison_experiment(X)
+    split_comparison_experiment(X)
 
 
 

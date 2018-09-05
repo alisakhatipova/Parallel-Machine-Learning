@@ -30,31 +30,39 @@ class ThunderDome:
         pos_subsets = np.array_split(positive, 10)
         neg_subsets = np.array_split(negative, 10)
         self.validation_set = np.concatenate((pos_subsets[-1], neg_subsets[-1]))
-        pos_len = pos_subsets[-1].size
-        neg_len = neg_subsets[-1].size
+        pos_len = len(pos_subsets[-1])
+        neg_len = len(neg_subsets[-1])
         self.validation_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
         positive = np.concatenate(pos_subsets[0:-1])
         negative = np.concatenate(neg_subsets[0:-1])
 
-
-        # subsets = np.array_split(all_set, 10)
-        # self.validation_set = subsets[-1]
-        # all_set = np.concatenate(subsets[0:-1])
-        # subclasses = np.array_split(classes, 10)
-        # self.validation_classes = subclasses[-1]
-        # classes = np.concatenate(subclasses[0:-1])
-        # set up train and test sets
         self.pos_train_set, self.pos_test_set = np.array_split(positive, 2)
         self.neg_train_set, self.neg_test_set = np.array_split(negative, 2)
+        data, classes = self.stratified_split_by_n(self.pos_train_set, self.neg_train_set, 1)
+        self.train_set, self.train_classes = data[0], classes[0]
+        data, classes = self.stratified_split_by_n(self.pos_test_set, self.neg_test_set, 1)
+        self.test_set, self.test_classes = data[0], classes[0]
 
-        # self.train_set, self.test_set = np.array_split(all_set, 2)
-        # self.train_classes, self.test_classes = np.array_split(classes, 2)
+        # self.pos_train_set, self.pos_test_set = np.array_split(positive, 2)
+        # self.neg_train_set, self.neg_test_set = np.array_split(negative, 2)
+        # this is needed for computing real result
+        # self.train_set = np.concatenate((self.pos_train_set, self.neg_train_set))
+        # pos_len = len(self.pos_train_set)
+        # neg_len = len(self.neg_train_set)
+        # self.train_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
+        #
+        # # this is needed for no_split
+        # self.test_set = np.concatenate((self.pos_test_set, self.neg_test_set))
+        # pos_len = len(self.pos_test_set)
+        # neg_len = len(self.neg_test_set)
+        # self.test_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
+
         self.models = []
         self.best_auc = 0
         if self.split_type == FULL_SPLIT:
             part_num = self.calculate_nodes_num(models_num, group_size)
             self.full_split_data, self.full_split_classes = \
-                self.split_data_by_n(self.test_set, self.test_classes, part_num)
+                self.stratified_split_by_n(self.pos_test_set, self.neg_test_set, part_num)
 
     def split_data(self, data_set, classes, g):
         n = math.ceil(len(self.models)*1.0 / g)
@@ -63,7 +71,11 @@ class ThunderDome:
     def split_data_by_n(self, data_set, classes, n):
         return np.array_split(data_set, n), np.array_split(classes, n)
 
-    def stratified_split(self, positive, negative, n):
+    def stratified_split(self, positive, negative, g):
+        n = int(math.ceil(len(self.models) * 1.0 / g))
+        return self.stratified_split_by_n(positive, negative, n)
+
+    def stratified_split_by_n(self, positive, negative, n):
         positive = self.simple_shuffle(positive)
         negative = self.simple_shuffle(negative)
         pos = np.array_split(positive, n)
@@ -73,8 +85,8 @@ class ThunderDome:
         for i in range(n):
             cur_data = np.concatenate((pos[i], neg[i]))
             all_data.append(cur_data)
-            pos_len = pos[i].size
-            neg_len = neg[i].size
+            pos_len = len(pos[i])
+            neg_len = len(neg[i])
             cur_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
             classes.append(cur_classes)
         return all_data, classes
@@ -141,8 +153,8 @@ class ThunderDome:
             # self.logger.info("Number of models in this round " + str(len(self.models)))
             groups = self.split_models(self.models, self.group_size)
             if self.split_type == SIMPLE_SPLIT:
-                self.test_set, self.test_classes = self.shuffle_data(self.test_set, self.test_classes)
-                test_sets, test_classes_sets = self.split_data(self.test_set, self.test_classes, self.group_size)
+                test_sets, test_classes_sets = self.stratified_split(self.pos_test_set, self.neg_test_set, self.group_size)
+                # test_sets, test_classes_sets = self.split_data(self.test_set, self.test_classes, self.group_size)
             elif self.split_type == FULL_SPLIT:
                 test_sets, test_classes_sets = self.next_part_of_full_split(self.group_size)
             winners = []
@@ -160,8 +172,9 @@ class ThunderDome:
                 return time.time() - start, self.models[0]
 
     def train(self):
-        train_subsets = np.array_split(self.train_set, self.models_num)
-        train_classes = np.array_split(self.train_classes, self.models_num)
+        # train_subsets = np.array_split(self.train_set, self.models_num)
+        # train_classes = np.array_split(self.train_classes, self.models_num)
+        train_subsets, train_classes = self.stratified_split_by_n(self.pos_train_set, self.neg_train_set, self.models_num)
         start = time.time()
         self.logger.info('Start decentralized training')
         for train_subset, train_class in zip(train_subsets, train_classes):
