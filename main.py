@@ -210,9 +210,12 @@ if __name__ == "__main__":
     # all_set = all_set[idx]
     # classes = classes[idx]
     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
+    positive_samples = all_set[np.where(classes == 1)[0]]
+    negative_samples = all_set[np.where(classes == 1)[0]]
     # all_set, classes = self.shuffle_data(all_set, classes)
-    X = [all_set, classes]
-    learners_num_comparison_experiment(X)
+    X = [positive_samples, negative_samples]
+
+    # learners_num_comparison_experiment(X)
 
 
 

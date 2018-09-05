@@ -19,33 +19,36 @@ class ThunderDome:
                     str(group_size) + " models number = " + str(models_num) +
                     " split type is " + SPL_STR[split_type] + " SPLIT")
         self.alg = alg
-            # if mode == MODE_DEBUG:
-            #     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
-            #     all_set, classes = self.shuffle_data(all_set, classes)
-            # else:
-            # classes = X[:, 0].reshape((-1, 1))
-            # all_set = X[:, 1:]
-            # all_set, classes = self.shuffle_data(all_set, classes)
-            # all_set = np.array_split(all_set, 1000)[0]
-            # classes = np.array_split(classes, 1000)[0]
-            # classes = np.loadtxt('datasets/classes.csv', delimiter=',')
-            # all_set = np.loadtxt('datasets/data.csv', delimiter=',')
-        all_set = X[0]
-        classes = X[1]
+        positive = self.simple_shuffle(X[0])
+        negative = self.simple_shuffle(X[1])
+        # shuffle here
         self.train_time = 0.0
         self.models_num = models_num
         self.group_size = group_size
         self.need_to_retrain = need_to_retrain
         # set up validation set
-        subsets = np.array_split(all_set, 10)
-        self.validation_set = subsets[-1]
-        all_set = np.concatenate(subsets[0:-1])
-        subclasses = np.array_split(classes, 10)
-        self.validation_classes = subclasses[-1]
-        classes = np.concatenate(subclasses[0:-1])
+        pos_subsets = np.array_split(positive, 10)
+        neg_subsets = np.array_split(negative, 10)
+        self.validation_set = np.concatenate((pos_subsets[-1], neg_subsets[-1]))
+        pos_len = pos_subsets[-1].size
+        neg_len = neg_subsets[-1].size
+        self.validation_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
+        positive = np.concatenate(pos_subsets[0:-1])
+        negative = np.concatenate(neg_subsets[0:-1])
+
+
+        # subsets = np.array_split(all_set, 10)
+        # self.validation_set = subsets[-1]
+        # all_set = np.concatenate(subsets[0:-1])
+        # subclasses = np.array_split(classes, 10)
+        # self.validation_classes = subclasses[-1]
+        # classes = np.concatenate(subclasses[0:-1])
         # set up train and test sets
-        self.train_set, self.test_set = np.array_split(all_set, 2)
-        self.train_classes, self.test_classes = np.array_split(classes, 2)
+        self.pos_train_set, self.pos_test_set = np.array_split(positive, 2)
+        self.neg_train_set, self.neg_test_set = np.array_split(negative, 2)
+
+        # self.train_set, self.test_set = np.array_split(all_set, 2)
+        # self.train_classes, self.test_classes = np.array_split(classes, 2)
         self.models = []
         self.best_auc = 0
         if self.split_type == FULL_SPLIT:
@@ -59,6 +62,23 @@ class ThunderDome:
 
     def split_data_by_n(self, data_set, classes, n):
         return np.array_split(data_set, n), np.array_split(classes, n)
+
+    def stratified_split(self, positive, negative, n):
+        positive = self.simple_shuffle(positive)
+        negative = self.simple_shuffle(negative)
+        pos = np.array_split(positive, n)
+        neg = np.array_split(negative, n)
+        all_data = []
+        classes = []
+        for i in range(n):
+            cur_data = np.concatenate((pos[i], neg[i]))
+            all_data.append(cur_data)
+            pos_len = pos[i].size
+            neg_len = neg[i].size
+            cur_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
+            classes.append(cur_classes)
+        return all_data, classes
+
 
     def next_part_of_full_split(self, g):
         n = int(math.ceil(len(self.models)*1.0 / g))
@@ -81,6 +101,11 @@ class ThunderDome:
     def shuffle_data(data, classes):
         idx = np.random.permutation(len(data))
         return data[idx], classes[idx]
+
+    @staticmethod
+    def simple_shuffle(data):
+        idx = np.random.permutation(len(data))
+        return data[idx]
 
     @staticmethod
     def split_models(models, g):
