@@ -9,6 +9,7 @@ import json
 algorithms = [alg_svm, alg_lr, alg_nn]
 alg_names = [alg_svm.__name__,  alg_lr.__name__, alg_nn.__name__]
 
+
 def split_comparison_experiment(X):
     group_size = 2
     model_num = 10
@@ -100,45 +101,91 @@ def split_comparison_experiment(X):
             res = alg + '_train_time_real = ' + json.dumps(train_time_real[alg]) + '\n' + alg + '_aver_train_time_real = ' + str(aver_time_real) + '\n'
             out.write(res)
 
-def group_size_comparison_experiment():
-    group_sizes = [2, 5, 10, 20, 100]
-    model_num = 1000
+
+def group_size_comparison_experiment(X):
+    group_sizes = [2, 5]
+    model_num = 10
+    res_real = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
+    res_normal = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
+    res_baseline = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
+
     for i in range(ITER_NUM):
         logger.info(
             "ITERATION NUMBER" + str(i) + ' ***************************************************************')
-        for group_size in group_sizes:
-            for alg in algorithms:
-                # train models (only need to do it once for all experiments
-                # compute result and time for decentralized case
+        for alg in algorithms:
+            for group_size in group_sizes:
+                algname = alg.__name__
                 experiment = ThunderDome(X, alg, group_size, model_num, logger,
                                          split_type=SIMPLE_SPLIT)
-                experiment.run_experiment()
-                experiment.compute_real_result()
-
-                # baseline SIMPLE SPLIT
+                _, auc = experiment.run_experiment()
+                res_normal[algname][group_size].append(auc)
+                _, auc = experiment.compute_real_result()
+                res_real[algname][group_size].append(auc)
+                # baseline
                 experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                          split_type=SIMPLE_SPLIT, need_to_retrain=False)
-                experiment.run_experiment()
+                _, auc = experiment.run_experiment()
+                res_baseline[algname][group_size].append(auc)
+
+    with open(path.join(LOG_FOLDER, 'group_size_comparison_experiment'), 'w') as out:
+        for alg in alg_names:
+            for group_size in group_sizes:
+                gr = str(group_size)
+                aver_real = sum(res_real[alg][group_size]) * 1.0 / ITER_NUM
+                res = alg + gr +'_res_real = ' + json.dumps(res_real[alg][group_size]) + '\n' + alg+ gr + '_aver_real = ' + str(aver_real) + '\n'
+                out.write(res)
+
+                aver_normal = sum(res_normal[alg][group_size]) * 1.0 / ITER_NUM
+                res = alg+ gr + '_res_normal = ' + json.dumps(res_normal[alg][group_size]) + '\n' +alg+ gr +  '_aver_normal = ' + str(aver_normal) + '\n'
+                out.write(res)
+                aver_baseline = sum(res_baseline[alg][group_size]) * 1.0 / ITER_NUM
+                res = alg+ gr + '_res_baseline = ' + json.dumps(res_baseline[alg][group_size]) + '\n' + alg + gr+ '_aver_baseline = ' + str(aver_baseline) + '\n'
+                out.write(res)
 
 
-def learners_num_comparison_experiment():
-    models_nums = [2, 5, 10, 20, 100]
+def learners_num_comparison_experiment(X):
+    models_nums = [5, 10]
+    group_size = 5
+    res_real = {alg: {model_num: [] for model_num in models_nums} for alg in alg_names}
+    res_normal = {alg: {model_num: [] for model_num in models_nums} for alg in alg_names}
+    res_baseline = {alg: {model_num: [] for model_num in models_nums} for alg in alg_names}
     for i in range(ITER_NUM):
         logger.info(
             "ITERATION NUMBER " + str(i) + ' ***************************************************************')
-        for model_num in models_nums:
-            for alg in algorithms:
-                # train models (only need to do it once for all experiments
-                # compute result and time for decentralized case
+        for alg in algorithms:
+            for model_num in models_nums:
+                algname = alg.__name__
                 experiment = ThunderDome(X, alg, group_size, model_num, logger,
                                          split_type=SIMPLE_SPLIT)
-                experiment.run_experiment()
-                experiment.compute_real_result()
-
-                # baseline SIMPLE SPLIT
+                _, auc = experiment.run_experiment()
+                res_normal[algname][model_num].append(auc)
+                _, auc = experiment.compute_real_result()
+                res_real[algname][model_num].append(auc)
+                # baseline
                 experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                          split_type=SIMPLE_SPLIT, need_to_retrain=False)
-                experiment.run_experiment()
+                _, auc = experiment.run_experiment()
+                res_baseline[algname][model_num].append(auc)
+
+            with open(path.join(LOG_FOLDER, 'model_num_comparison_experiment'), 'w') as out:
+                for alg in alg_names:
+                    for model_num in models_nums:
+                        mn = str(model_num)
+                        aver_real = sum(res_real[alg][model_num]) * 1.0 / ITER_NUM
+                        res = alg + mn + '_res_real = ' + json.dumps(
+                            res_real[alg][model_num]) + '\n' + alg + mn + '_aver_real = ' + str(aver_real) + '\n'
+                        out.write(res)
+
+                        aver_normal = sum(res_normal[alg][model_num]) * 1.0 / ITER_NUM
+                        res = alg + mn + '_res_normal = ' + json.dumps(
+                            res_normal[alg][model_num]) + '\n' + alg + mn + '_aver_normal = ' + str(aver_normal) + '\n'
+                        out.write(res)
+                        aver_baseline = sum(res_baseline[alg][model_num]) * 1.0 / ITER_NUM
+                        res = alg + mn + '_res_baseline = ' + json.dumps(
+                            res_baseline[alg][model_num]) + '\n' + alg + mn + '_aver_baseline = ' + str(
+                            aver_baseline) + '\n'
+                        out.write(res)
+
 
 if __name__ == "__main__":
     try:
@@ -165,7 +212,7 @@ if __name__ == "__main__":
     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
     # all_set, classes = self.shuffle_data(all_set, classes)
     X = [all_set, classes]
-    split_comparison_experiment(X)
+    learners_num_comparison_experiment(X)
 
 
 
