@@ -11,7 +11,7 @@ from constants import *
 
 class ThunderDome:
     def __init__(self, X, alg, group_size, models_num, logger,
-                 need_to_retrain=True, mode=MODE_DEBUG, split_type=SIMPLE_SPLIT):
+                 need_to_retrain=True, split_type=SIMPLE_SPLIT):
         self.logger = logger
         self.split_type = split_type
         logger.info("\n\n")
@@ -97,16 +97,16 @@ class ThunderDome:
 
     def run(self):
         if self.need_to_retrain:
-            shutil.rmtree(MODELS_DIR)
-            os.mkdir(MODELS_DIR)
+            shutil.rmtree(MODELS_FOLDER)
+            os.mkdir(MODELS_FOLDER)
             self.train_time = self.train()
             for i, model in enumerate(self.models):
-                joblib.dump(model, os.path.join(MODELS_DIR, str(i) + '.pkl'))
+                joblib.dump(model, os.path.join(MODELS_FOLDER, str(i) + '.pkl'))
         else:
             self.models = []
-            models_list = sorted(os.listdir(MODELS_DIR), key=lambda st: int(st.split('.')[0]))
+            models_list = sorted(os.listdir(MODELS_FOLDER), key=lambda st: int(st.split('.')[0]))
             for filename in models_list:
-                self.models.append(joblib.load(os.path.join(MODELS_DIR, filename)))
+                self.models.append(joblib.load(os.path.join(MODELS_FOLDER, filename)))
         round_num = 0
         self.logger.info('Start rounds')
         start = time.time()
@@ -132,7 +132,7 @@ class ThunderDome:
             self.models = winners
             if len(self.models) == 1:
                 self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
-                return str(time.time() - start), self.models[0]
+                return time.time() - start, self.models[0]
 
     def train(self):
         train_subsets = np.array_split(self.train_set, self.models_num)

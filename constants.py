@@ -6,4 +6,4 @@ MODE_REAL = 1
 SPL_STR = ["SIMPLE", "FULL", "NO"]
 LOG_FOLDER = 'base_experiment'
 MODELS_FOLDER = 'models'
-iter_num = 10
+ITER_NUM = 2
