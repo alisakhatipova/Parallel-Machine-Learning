@@ -5,7 +5,7 @@ import shutil
 import time
 from sklearn.metrics import roc_auc_score
 from sklearn.externals import joblib
-from sklearn import datasets
+
 from constants import *
 
 
@@ -19,10 +19,10 @@ class ThunderDome:
                     str(group_size) + " models number = " + str(models_num) +
                     " split type is " + SPL_STR[split_type] + " SPLIT")
         self.alg = alg
-        if mode == MODE_DEBUG:
-            all_set, classes = datasets.load_breast_cancer(return_X_y=True)
-            all_set, classes = self.shuffle_data(all_set, classes)
-        else:
+            # if mode == MODE_DEBUG:
+            #     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
+            #     all_set, classes = self.shuffle_data(all_set, classes)
+            # else:
             # classes = X[:, 0].reshape((-1, 1))
             # all_set = X[:, 1:]
             # all_set, classes = self.shuffle_data(all_set, classes)
@@ -30,8 +30,9 @@ class ThunderDome:
             # classes = np.array_split(classes, 1000)[0]
             # classes = np.loadtxt('datasets/classes.csv', delimiter=',')
             # all_set = np.loadtxt('datasets/data.csv', delimiter=',')
-            all_set = X[0]
-            classes = X[1]
+        all_set = X[0]
+        classes = X[1]
+        self.train_time = 0.0
         self.models_num = models_num
         self.group_size = group_size
         self.need_to_retrain = need_to_retrain
@@ -88,16 +89,17 @@ class ThunderDome:
         return [models[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in xrange(n)]
 
     def run_experiment(self):
-        winner = self.run()
-        self.validate(winner)
+        time, winner = self.run()
+        auc = self.validate(winner)
         self.logger.info('End of validation')
+        return self.train_time + time, auc
         # self.compute_real_result()
 
     def run(self):
         if self.need_to_retrain:
             shutil.rmtree(MODELS_DIR)
             os.mkdir(MODELS_DIR)
-            self.train()
+            self.train_time = self.train()
             for i, model in enumerate(self.models):
                 joblib.dump(model, os.path.join(MODELS_DIR, str(i) + '.pkl'))
         else:
@@ -130,7 +132,7 @@ class ThunderDome:
             self.models = winners
             if len(self.models) == 1:
                 self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
-                return self.models[0]
+                return str(time.time() - start), self.models[0]
 
     def train(self):
         train_subsets = np.array_split(self.train_set, self.models_num)
@@ -142,6 +144,7 @@ class ThunderDome:
             self.models.append(model)
         self.logger.info('End decentralized training ' + str(time.time() - start)
                          + ' seconds, time per model ' + str((time.time() - start)/self.models_num) + ' seconds')
+        return (time.time() - start)/self.models_num
 
     def validate(self, model):
         predicted_classes = model.predict(self.validation_set)
@@ -154,11 +157,13 @@ class ThunderDome:
         start = time.time()
         self.logger.info('\n\nStart centralized training')
         model = self.alg(self.train_set, self.train_classes)
-        self.logger.info('End centralized training ' + str(time.time() - start) + ' seconds')
+        train_time = time.time() - start
+        self.logger.info('End centralized training ' + str(train_time) + ' seconds')
         self.logger.info('Start centralized prediction')
         predicted_classes = model.predict(self.validation_set)
         auc = roc_auc_score(self.validation_classes, predicted_classes)
         self.logger.info('For centralized case result is ' + str(auc) + '\n')
+        return train_time, auc
         # print 'For not distributed case result is ', auc
 
     def competition(self, models, test_set, test_classes):
