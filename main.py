@@ -11,8 +11,8 @@ alg_names = [alg_svm.__name__,  alg_lr.__name__, alg_nn.__name__]
 
 
 def split_comparison_experiment(X):
-    group_size = 2
-    model_num = 10
+    group_size = 5
+    model_num = 1000
     res_full = {alg: [] for alg in alg_names}
     res_full_baseline = {alg: [] for alg in alg_names}
     res_simple = {alg: [] for alg in alg_names}
@@ -109,8 +109,8 @@ def split_comparison_experiment(X):
 
 
 def group_size_comparison_experiment(X):
-    group_sizes = [2, 5]
-    model_num = 10
+    group_sizes = [2, 5, 10, 50, 100]
+    model_num = 1000
     res_real = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
     res_normal = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
     res_baseline = {alg: {gr_size: [] for gr_size in group_sizes} for alg in alg_names}
@@ -155,7 +155,7 @@ def group_size_comparison_experiment(X):
 
 
 def learners_num_comparison_experiment(X):
-    models_nums = [5, 10]
+    models_nums = [10, 50, 100, 10000, 100000]
     group_size = 5
     res_real = {alg: {model_num: [] for model_num in models_nums} for alg in alg_names}
     res_normal = {alg: {model_num: [] for model_num in models_nums} for alg in alg_names}
@@ -213,10 +213,10 @@ if __name__ == "__main__":
                         format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     np.random.seed(0)
     logger = logging.getLogger()
-    # X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
-    # classes = X[:, 0].reshape((-1, 1))
-    # all_set = X[:, 1:]
-    all_set, classes = datasets.load_breast_cancer(return_X_y=True)
+    X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
+    classes = X[:, 0].reshape((-1, 1))
+    all_set = X[:, 1:]
+    # all_set, classes = datasets.load_breast_cancer(return_X_y=True)
     positive_samples = all_set[np.where(classes == 1)[0]]
     negative_samples = all_set[np.where(classes == 0)[0]]
     X = [positive_samples, negative_samples]
