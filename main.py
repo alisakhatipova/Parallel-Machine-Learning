@@ -12,7 +12,7 @@ alg_names = [alg_svm.__name__,  alg_lr.__name__, alg_nn.__name__]
 
 def split_comparison_experiment(X):
     group_size = 2
-    model_num = 40
+    model_num = 10
     res_full = {alg: [] for alg in alg_names}
     res_full_baseline = {alg: [] for alg in alg_names}
     res_simple = {alg: [] for alg in alg_names}
@@ -22,6 +22,7 @@ def split_comparison_experiment(X):
     res_real = {alg: [] for alg in alg_names}
     train_time_real = {alg: [] for alg in alg_names}
     train_time_decentr = {alg: [] for alg in alg_names}
+    train_time_baseline = {alg: [] for alg in alg_names}
     for i in range(ITER_NUM):
         logger.info("ITERATION NUMBER " + str(i) + ' ***************************************************************')
         for alg in algorithms:
@@ -40,7 +41,8 @@ def split_comparison_experiment(X):
             # baseline SIMPLE SPLIT
             experiment = ThunderDome(X, alg, model_num, model_num, logger,
                                      split_type=SIMPLE_SPLIT, need_to_retrain=False)
-            _, auc = experiment.run_experiment()
+            tr_time, auc = experiment.run_experiment()
+            train_time_baseline[algname].append(tr_time)
             res_simple_baseline[algname].append(auc)
 
             # the same experiment for FULL_SPLIT
@@ -101,6 +103,10 @@ def split_comparison_experiment(X):
             res = alg + '_train_time_real = ' + json.dumps(train_time_real[alg]) + '\n' + alg + '_aver_train_time_real = ' + str(aver_time_real) + '\n'
             out.write(res)
 
+            aver_time_baseline = sum(train_time_baseline[alg]) * 1.0 / ITER_NUM
+            res = alg + '_train_time_baseline = ' + json.dumps(train_time_baseline[alg]) + '\n' + alg + '_aver_train_time_baseline= ' + str(aver_time_baseline) + '\n'
+            out.write(res)
+
 
 def group_size_comparison_experiment(X):
     group_sizes = [2, 5]
@@ -113,10 +119,15 @@ def group_size_comparison_experiment(X):
         logger.info(
             "ITERATION NUMBER" + str(i) + ' ***************************************************************')
         for alg in algorithms:
+            first_time = True
             for group_size in group_sizes:
                 algname = alg.__name__
+                need_to_retrain = False
+                if first_time:
+                    first_time = False
+                    need_to_retrain = True
                 experiment = ThunderDome(X, alg, group_size, model_num, logger,
-                                         split_type=SIMPLE_SPLIT)
+                                         split_type=SIMPLE_SPLIT, need_to_retrain=need_to_retrain)
                 _, auc = experiment.run_experiment()
                 res_normal[algname][group_size].append(auc)
                 _, auc = experiment.compute_real_result()
@@ -186,22 +197,6 @@ def learners_num_comparison_experiment(X):
                             aver_baseline) + '\n'
                         out.write(res)
 
-
-def stratified_split(positive, negative, n):
-    pos = np.array_split(positive, n)
-    neg = np.array_split(negative, n)
-    all_data = []
-    classes = []
-    for i in range(n):
-        cur_data = np.concatenate((pos[i], neg[i]))
-        all_data.append(cur_data)
-        pos_len = len(pos[i])
-        neg_len = len(neg[i])
-        cur_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
-        classes.append(cur_classes)
-    return all_data, classes
-
-
 if __name__ == "__main__":
     try:
         os.stat(LOG_FOLDER)
@@ -221,30 +216,11 @@ if __name__ == "__main__":
     # X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
     # classes = X[:, 0].reshape((-1, 1))
     # all_set = X[:, 1:]
-    # idx = np.random.permutation(len(all_set))
-    # all_set = all_set[idx]
-    # classes = classes[idx]
     all_set, classes = datasets.load_breast_cancer(return_X_y=True)
     positive_samples = all_set[np.where(classes == 1)[0]]
     negative_samples = all_set[np.where(classes == 0)[0]]
-    # all_set, classes = self.shuffle_data(all_set, classes)
-    # data, classes = stratified_split(positive_samples, negative_samples, 2)
     X = [positive_samples, negative_samples]
 
     split_comparison_experiment(X)
-
-
-
-    # X = np.loadtxt('datasets/SUSY.csv', dtype='f4', delimiter=',')
-    # np.random.seed(34445)
-    # classes = X[:, 0].reshape((-1, 1))
-    # all_set = X[:, 1:]
-    # idx = np.random.permutation(len(all_set))
-    # all_set = all_set[idx]
-    # classes = classes[idx]
-    # all_set = np.array_split(all_set, 10)[0]
-    # classes = np.array_split(classes, 10)[0]
-    # np.savetxt('datasets/data10.csv', all_set, delimiter=',')
-    # np.savetxt('datasets/classes10.csv', classes,  delimiter=',')
-    # all_set = np.array_split(all_set, 1000)[0]
-    # classes = np.array_split(classes, 1000)[0]
+    group_size_comparison_experiment(X)
+    learners_num_comparison_experiment(X)

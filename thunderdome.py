@@ -42,21 +42,7 @@ class ThunderDome:
         self.train_set, self.train_classes = data[0], classes[0]
         data, classes = self.stratified_split_by_n(self.pos_test_set, self.neg_test_set, 1)
         self.test_set, self.test_classes = data[0], classes[0]
-
-        # self.pos_train_set, self.pos_test_set = np.array_split(positive, 2)
-        # self.neg_train_set, self.neg_test_set = np.array_split(negative, 2)
-        # this is needed for computing real result
-        # self.train_set = np.concatenate((self.pos_train_set, self.neg_train_set))
-        # pos_len = len(self.pos_train_set)
-        # neg_len = len(self.neg_train_set)
-        # self.train_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
-        #
-        # # this is needed for no_split
-        # self.test_set = np.concatenate((self.pos_test_set, self.neg_test_set))
-        # pos_len = len(self.pos_test_set)
-        # neg_len = len(self.neg_test_set)
-        # self.test_classes = np.concatenate((np.ones(pos_len), np.zeros(neg_len)))
-
+        self.one_model_test_time = -1.0
         self.models = []
         self.best_auc = 0
         if self.split_type == FULL_SPLIT:
@@ -139,11 +125,16 @@ class ThunderDome:
             self.train_time = self.train()
             for i, model in enumerate(self.models):
                 joblib.dump(model, os.path.join(MODELS_FOLDER, str(i) + '.pkl'))
+            with open("traintime", 'w') as f:
+                f.write(str(self.train_time))
         else:
             self.models = []
             models_list = sorted(os.listdir(MODELS_FOLDER), key=lambda st: int(st.split('.')[0]))
             for filename in models_list:
                 self.models.append(joblib.load(os.path.join(MODELS_FOLDER, filename)))
+            with open("traintime") as f:
+                for line in f:
+                    self.train_time = float(line)
         round_num = 0
         self.logger.info('Start rounds')
         start = time.time()
@@ -169,7 +160,7 @@ class ThunderDome:
             self.models = winners
             if len(self.models) == 1:
                 self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
-                return time.time() - start, self.models[0]
+                return self.one_model_test_time * round_num, self.models[0]
 
     def train(self):
         # train_subsets = np.array_split(self.train_set, self.models_num)
@@ -208,7 +199,10 @@ class ThunderDome:
         best_model = None
         best_auc = 0.0
         for model in models:
+            start = time.time()
             predicted_classes = model.predict(test_set)
+            if self.one_model_test_time < 0:
+                self.one_model_test_time = time.time() - start
             auc = roc_auc_score(test_classes, predicted_classes)
             if auc > best_auc:
                 best_auc = auc
