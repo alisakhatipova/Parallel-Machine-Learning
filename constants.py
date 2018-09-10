@@ -1,7 +1,9 @@
 SIMPLE_SPLIT = 0
 FULL_SPLIT = 1
 NO_SPLIT  = 2
-MODELS_DIR = 'models'
 MODE_DEBUG = 0
 MODE_REAL = 1
 SPL_STR = ["SIMPLE", "FULL", "NO"]
+LOG_FOLDER = 'base_experiment'
+MODELS_FOLDER = 'models'
+ITER_NUM = 10
