@@ -42,7 +42,6 @@ class ThunderDome:
         self.train_set, self.train_classes = data[0], classes[0]
         data, classes = self.stratified_split_by_n(self.pos_test_set, self.neg_test_set, 1)
         self.test_set, self.test_classes = data[0], classes[0]
-        self.one_model_test_time = -1.0
         self.models = []
         self.best_auc = 0
         if self.split_type == FULL_SPLIT:
@@ -137,9 +136,10 @@ class ThunderDome:
                     self.train_time = float(line)
         round_num = 0
         self.logger.info('Start rounds')
-        start = time.time()
+        rounds_time = 0.0
         while True:
             round_num += 1
+            start = time.time()
             # self.logger.info("Round number " + str(round_num))
             # self.logger.info("Number of models in this round " + str(len(self.models)))
             groups = self.split_models(self.models, self.group_size)
@@ -157,10 +157,11 @@ class ThunderDome:
                 for group, test_set, test_classes_set in zip(groups, test_sets, test_classes_sets):
                     best_model = self.competition(group, test_set, test_classes_set)
                     winners.append(best_model)
+            rounds_time += (time.time() - start) / len(self.models)
             self.models = winners
             if len(self.models) == 1:
                 self.logger.info('End rounds in ' + str(time.time() - start) + ' seconds')
-                return self.one_model_test_time * round_num, self.models[0]
+                return rounds_time, self.models[0]
 
     def train(self):
         # train_subsets = np.array_split(self.train_set, self.models_num)
@@ -199,10 +200,7 @@ class ThunderDome:
         best_model = None
         best_auc = 0.0
         for model in models:
-            start = time.time()
             predicted_classes = model.predict(test_set)
-            if self.one_model_test_time < 0:
-                self.one_model_test_time = time.time() - start
             auc = roc_auc_score(test_classes, predicted_classes)
             if auc > best_auc:
                 best_auc = auc
