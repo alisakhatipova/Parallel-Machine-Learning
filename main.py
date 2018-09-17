@@ -242,6 +242,6 @@ if __name__ == "__main__":
     X = [positive_samples, negative_samples]
 
 
-    learners_num_comparison_experiment(X)
+    # learners_num_comparison_experiment(X)
     # group_size_comparison_experiment(X)
     split_comparison_experiment(X)
