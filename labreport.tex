@@ -1,0 +1,216 @@
+\documentclass{scrartcl} 
+
+%common packages
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+%some common common definitions
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\expected}{\mathbb{E}}
+\newcommand{\bigO}{\mathcal{O}}
+\newcommand{\smallo}{\textit{\textbf{o}}}
+
+\title{Parallel Machine Learning}
+\subtitle{Lab Report: Development and Application of Data Mining and Learning Systems: Data Science and Big Data 2018}
+\date{}
+
+\author{
+Alisa Khatipova\\
+RWTH-Aachen University
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present a novel competition-based aggregation scheme for machine learning models trained on different nodes of distributed system.  This approach allows black-box parallelisation and does not put any restraints on the algorithm. The study shows that the suggested approach allows to reach comparable level of accuracy with the centralised learning while taking much less time due to parallelisation.
+\end{abstract}
+
+\section{Introduction}
+In order to process large datasets, machine learning algorithms can be parallelised on many processing nodes, which leads to the need of scalable machine learning algorithms. After machine learning models were trained on distributed system the question is how to aggregate these models effectively, that is, as fast as possible and not losing much in quality of resulting model, in comparison to centralised training.
+
+There are several existing approaches: 
+First approach deals with parallel computation of Stochastic Gradient Descent - an optimisation algorithm, used for finding parameters for ML models. The idea is to run the model on test data and update the model in a way that moves it along the gradient of error towards minimum error value. It is possible to perform distributed gradient computation, i.e., compute local gradients, average them, centralise them, then perform a central update step, and send that updated model back to the learners.
+
+In second approach the model updates are actually performed locally. These models then are sent to central node and aggregated through some aggregation function. The simplest example of aggregation function for vectors from parameter space could be simple sum of m vectors divided by m.
+
+Third approach is about using more robust aggregation method based on Radon points, which is a form of multi-dimensional median. Radon point of two disjoint sets of points is any point lying in the intersection of convex hulls of these sets. First of all chosen learning algorithm is applied in parallel on random subsets of data. Each resulting hypothesis is assigned to a leaf of an aggregation tree which is then traversed bottom-up. Each inner node computes a new hypothesis that is a Radon point of its children’s hypotheses.
+
+The scheme proposed in this paper allows black-box parallelisation, which means that it does not depend on underlying machine learning algorithm and the same implementation can be used for any of them. Moreover, we do not put any restraints on the algorithm, e.g. the scheme is applicable to non-linear, high-dimensional models. 
+The main purpose of this work is to find out how does the proposed approach work time-wise and performance-wise (in terms of prediction quality) in comparison with centralised and baseline approaches and how does the change of parameters (number of learners, group size, splitting technique) affect the results. 
+Answering this question is not trivial, as estimating the quality of the model winning the competition depending on parameters we introduce is not trivial itself, that is why we do the experiments and find out how this works in practice. 
+
+To answer the stated questions I implement the algorithm and run experiments in which I compare time, prediction quality. The results of the experiments are visualised on diagrams and allow to see the needed outcomes dependencies.
+
+
+\section{Approach}
+We train many “weak” learners on different parts of training dataset and choose the winner from these models using the following competition scheme:\\
+In each round\\
+•   Split the learners into n/g groups of size g\\
+•.  Run every group of g learners on a part of test set\\
+•.  Choose the strongest learner from each group for the next round\\
+•.  Repeat until only one learner is left\\
+We want to try out different approaches as for splitting strategy, group sizes, number of learners and find out which parameters influence result the most and in which way.
+Three different machine learning algorithms were used for comparison: support vector machine, linear regression and multi-layer perceptron. 
+All three classifiers take as input training pair samples 
+SVM 
+tries to find the separating hyperplane that maximises the distance of the closest points to the margin (the support vectors)
+
+
+\begin{equation}
+\arg\max_\alpha \sum_j \alpha_j - \frac{1}{2} \sum_{j,k} \alpha_j, \alpha_k y_j y_k (x_j \cdot x_k)
+\label{eqn:svm:maxmarg}
+\end{equation}
+
+\begin{equation}
+F(x_i) \cdot F(x_j) = (x_i \cdot x_j)^2
+\end{equation}
+
+
+For measuring accuracy of predictions ROC AUC score was used. ROC AUC score is a metric for binary classification which stands for Area Under Receiver Operating Characteristic Curve. ROC plots True Positive Rate and False Positive Rate for different classification thresholds. 
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[scale=0.5]{pictures/approach_train.png}
+  \end{center}
+  \caption{A boat.}
+  \label{fig:boat1}
+\end{figure}
+
+\begin{figure}[h!]
+  \includegraphics[width=\linewidth]{pictures/approach_example.png}
+  \caption{A boat.}
+  \label{fig:boat2}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/approach_baseline.png}
+    \caption{Coffee.}
+  \end{subfigure}\hfill%
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/approach_main.png}
+    \caption{More coffee.}
+  \end{subfigure}
+  \caption{The same cup of coffee. Two times.}
+  \label{fig:approach}
+\end{figure}
+
+
+
+\section{Experiments}
+The algorithm and experiments setup were implemented in programming language Python 2 mainly making use of  the libraries numpy and scikit-learn. The source code is available on github []. For the experiments we chose SUSY dataset from UC Irvine Machine Learning Repository [] as it is small enough to work with on local computer, preprocessed and easy to work with and freely available for research purposes. Dataset contains 5000000 samples and 18 features. However, for 1st and 4th experiment only random 500000 samples from this dataset were used, because computation was taking too much time. 
+
+The dataset was split in the following proportions: 45\% - test set, 45\% - training set, 10\% - validation set. Four main experiments were conducted: Time measurements, Split techniques comparison, Group sizes comparison and Learners number comparison. Every experiment was run 10 times, the diagrams show the averaged result of these multiple runs. \\
+The terminology used for the "Time measurements" experiment: \\
+•	Centralized– Simply time spent for training \\
+•	Main and Baseline – Time spent for the training of all learners and competition time, in assumption that training and prediction are performed in parallel \\
+The terminology used for the "Split strategies comparison" experiment : \\
+•	No split – Always use the same (full) test set \\
+•	Simple split – On each round reshuffle the test set, split in n parts where n is number of groups. Run each group on different part of set\\
+•	Full split – Split test set into k parts where k is number of nodes in the competition tree\\
+
+\begin{figure}[h!]
+  \begin{center}
+  \includegraphics[scale=0.3]{pictures/exp_time.png}
+    \end{center}
+  \caption{A boat.}
+  \label{fig:boat2}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_split_full.png}
+    \caption{Coffee.}
+  \end{subfigure}\hfill%
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_split_simple.png}
+    \caption{More coffee.}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_split_no.png}
+    \caption{More coffee.}
+  \end{subfigure}
+  \caption{The same cup of coffee. Two times.}
+  \label{fig:approach}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+  \includegraphics[scale=0.3]{pictures/exp_split_time.png}
+    \end{center}
+  \caption{A boat.}
+  \label{fig:boat2}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_group_2.png}
+    \caption{Coffee.}
+  \end{subfigure}\hfill%
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_group_5.png}
+    \caption{More coffee.}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_group_10.png}
+    \caption{More coffee.}
+  \end{subfigure}\hfill%
+      \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_group_50.png}
+    \caption{More coffee.}
+  \end{subfigure}
+  \caption{The same cup of coffee. Two times.}
+  \label{fig:approach}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_learn_num_10.png}
+    \caption{Coffee.}
+  \end{subfigure}\hfill%
+  \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_learn_num_100.png}
+    \caption{More coffee.}
+  \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_learn_num_1000.png}
+    \caption{More coffee.}
+  \end{subfigure}\hfill%
+      \begin{subfigure}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{pictures/exp_learn_num_10000.png}
+    \caption{More coffee.}
+  \end{subfigure}
+  \caption{The same cup of coffee. Two times.}
+  \label{fig:approach}
+\end{figure}
+
+\section{Conclusion}
+Experiments show, that different split techniques and group sizes do not affect the results substantially. The interesting result is that results of “full split” approach are as good as results of “no split” and “simple split”, being the fastest due to smaller sizes of test data chunks. “No split” approach is the slowest, as the whole test set is used for competition for all groups and rounds. For “simple split” chunks are small in the first round and get bigger as round number increases, so that approach takes more time than “full split” and less time than “no split”.
+
+As for experiments with different number of learners, it can be noticed that larger number of learners worsen the results. That can be explained by the fact, that the size of the training set always remains the same. Therefore, in case of 10000 learners and initial dataset of 500000 samples we have only 22.5 samples pro learner, which could result in a model of bad quality.
+Results of baseline approach do not differ significantly from results of the main approach in the same time taking a bit less time. It shows that multiple rounds might be excessive.  
+Results of baseline and main approach are a little bit better than results of centralized approach in the same time taking much less time given that the number of learners is not too high. This results can be explained by the fact, that centralized model was trained using only training set and did not have any knowledge of other part of the initial set, which was used for competition in baseline and main approach.
+
+Future work could include the following experiments:
+1)	Try to train the centralized model on the training set together with test set and estimate the prediction results and time in this case
+2)	In rounds choose n winners instead of only 1. In case when multiple strong models end up in the same group we do not throw away all but one, so this approach would be preferable. 
+3)	Change proportions of train set and test set as for original set, e.g. 70/20/10 instead of 45/45/10. In this setup centralized model might be stronger, as it has information about bigger part of the dataset.
+
+\bibliographystyle{plainnat}
+\bibliography{name of your bibliography file}
+\end{document}
