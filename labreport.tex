@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage{esvect}
 
 %some common common definitions
 \newcommand{\R}{\mathbb{R}}
@@ -34,7 +35,7 @@ RWTH-Aachen University
 \maketitle
 
 \begin{abstract}
-We present a novel competition-based aggregation scheme for machine learning models trained on different nodes of distributed system.  This approach allows black-box parallelisation and does not put any restraints on the algorithm. The study shows that the suggested approach allows to reach comparable level of accuracy with the centralised learning while taking much less time due to parallelisation.
+We present a novel competition-based aggregation scheme for machine learning models trained on different nodes of distributed system.  This approach allows black-box parallelisation and does not put any strict restraints on the algorithm. An empirical study shows that the suggested approach allows to reach comparable level of accuracy to the centralised learning while taking much less time due to parallelisation.
 \end{abstract}
 
 \section{Introduction}
@@ -48,11 +49,11 @@ In second approach the model updates are actually performed locally. These model
 
 Third approach is about using more robust aggregation method based on Radon points, which is a form of multi-dimensional median. Radon point of two disjoint sets of points is any point lying in the intersection of convex hulls of these sets. First of all chosen learning algorithm is applied in parallel on random subsets of data. Each resulting hypothesis is assigned to a leaf of an aggregation tree which is then traversed bottom-up. Each inner node computes a new hypothesis that is a Radon point of its children’s hypotheses.
 
-The main advantages of the proposed scheme are black-box parallelisation, which means that it does not depend on underlying machine learning algorithm and the same implementation can be used for any of them and very soft restraints on the algorithm, which means that we don't require it to satisfy any certain mathematical restrictions. In addition, the process of competition can be effectively parallelised.
+The main advantages of the proposed scheme are black-box parallelisation, which means that it does not depend on underlying machine learning algorithm and the same implementation can be used for any of them, and very soft restraints on the algorithm, which means that we don't require it to satisfy any certain mathematical restrictions. In addition, the process of competition can be effectively parallelised.
 The main purpose of this work is to find out how does the proposed approach work time-wise and performance-wise (in terms of prediction quality) in comparison with centralised and baseline approaches and how does the change of parameters (number of learners, group size, splitting technique) affect the results. 
 Answering this question is not trivial, as estimating the quality of the model winning the competition depending on parameters we introduce is not trivial itself, that is why we do the experiments and find out how this works in practice. 
 
-To answer the stated questions we implement the algorithm and run experiments in which we compare time, prediction quality. The results of the experiments are visualised on diagrams and allow to see the needed outcomes dependencies.
+To answer the stated questions we implement the algorithm and run experiments in which we compare time, prediction quality. The results of the experiments are visualised on diagrams and allow to see the needed outcomes and dependencies.
 
 
 \section{Approach}
@@ -84,25 +85,16 @@ In each round\\
   \label{fig:approach}
 \end{figure}
 
-We want to try out different approaches as for splitting strategy, group sizes, number of learners and find out which parameters influence result the most and in which way.
+We want to try out different approaches as for splitting strategy, group sizes, number of learners and find out which parameters influence result the most and in which way.\\
 Three different machine learning algorithms were used for comparison: support vector machine, linear regression and multi-layer perceptron. 
-All three classifiers take as input training pair samples 
-SVM 
-tries to find the separating hyperplane that maximises the distance of the closest points to the margin (the support vectors)
+All three classifiers take as input training pair samples $\big( \mathbf x_i, y_i \big)$ where  $\mathbf x_i \in \mathbb{R}^n$, $y_i \in \{ -1, 1\}$ where -1 or 1 indicates the class to which $x_i$ belongs and give as output a model $y = f(\mathbf x, \theta)$ by tuning $\theta$. \\
 
+The objective of SVM algorithm is to find the separating hyperplane in n-dimensional space that maximises the margin, which is defined by distance from hyperplane to nearest training data points.\\
+Logistic regression uses sigmoid function $h_ \theta (x) =  \frac{\mathrm{1} }{\mathrm{1} + e^{-\theta^Tx} }  $  where  $ \theta^Tx = b + w_1x_1 + w_2x_2 + ... w_nx_n$ to map the output of linear function to a value from \big(0, 1\big), which is treated as $\Pr( y = 1 \mid x, \theta)$ The objective of this algorithm is to maximise the likelihood function. Test sample is classified according to threshold value, e.g. as class 1 if the output of the function is more then 0.5 and as 0 otherwise. \\
+Multi-layer perceptron classifier is based on feedforward artificial neural network which consists of multiple layers of nodes. Each node can have connections to multiple nodes. Node produces an output which is calculated from output of predecessor nodes and values of weights and bias vectors using a function assigned to this node. The objective of the algorithm is to calculate weight matrices $W$ for connections  and bias vectors $b$ for nodes by minimising the loss function.
 
-\begin{equation}
-\arg\max_\alpha \sum_j \alpha_j - \frac{1}{2} \sum_{j,k} \alpha_j, \alpha_k y_j y_k (x_j \cdot x_k)
-\label{eqn:svm:maxmarg}
-\end{equation}
-
-\begin{equation}
-F(x_i) \cdot F(x_j) = (x_i \cdot x_j)^2
-\end{equation}
-
-
-For measuring accuracy of predictions ROC AUC score was used. ROC AUC score is a metric for binary classification which stands for Area Under Receiver Operating Characteristic Curve. ROC plots True Positive Rate and False Positive Rate for different classification thresholds. 
-
+For measuring accuracy of predictions ROC AUC score was used. ROC AUC score is a metric for binary classification which stands for Area Under Receiver Operating Characteristic Curve. ROC plots True Positive Rate and False Positive Rate for different classification thresholds. \\
+**more about AUC score here**
 
 
 \begin{figure}[t]
@@ -116,9 +108,14 @@ For measuring accuracy of predictions ROC AUC score was used. ROC AUC score is a
 
 
 \section{Experiments}
-The algorithm and experiments setup were implemented in programming language Python 2 mainly making use of  the libraries numpy and scikit-learn. The source code is available on github []. For the experiments we chose SUSY dataset from UC Irvine Machine Learning Repository [] as it is small enough to work with on local computer, preprocessed and easy to work with and freely available for research purposes. Dataset contains 5000000 samples and 18 features. However, for 1st and 4th experiment only random 500000 samples from this dataset were used, because computation was taking too much time. 
+The algorithm and experiments setup were implemented in programming language Python 2 mainly making use of  the libraries numpy and scikit-learn. The source code is available on github []. For the experiments we chose SUSY dataset from UC Irvine Machine Learning Repository [] as it is small enough to work with on local computer, preprocessed and easy to work with and freely available for research purposes. Dataset contains 5000000 samples and 18 features. However, for "Time measurements" and "Learners number comparison" experiment only random 500000 samples from this dataset were used, because computation was taking too much time. 
 
 The dataset was split in the following proportions: 45\% - test set, 45\% - training set, 10\% - validation set. Four main experiments were conducted: Time measurements, Split techniques comparison, Group sizes comparison and Learners number comparison. Every experiment was run 10 times, the diagrams show the averaged result of these multiple runs. \\
+In experiment we will use the following names for the approaches: \\
+• Centralized - experiment is conducted by training the model on the whole training set and then testing it on validation set\\
+• Baseline - one round, choose the best from n learners\\
+• Main - several rounds, choose one best learners from g learners in every group\\
+
 \subsection{Time measurements}
 The terminology used for the "Time measurements" experiment: \\
 •	Centralized – Simply time spent for training \\
